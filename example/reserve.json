@@ -1,0 +1,14 @@
+{
+  "token":"gIkuvaNzQIHg97ATvDxqgjtO",
+  "team_id":"T0001",
+  "team_domain":"example",
+  "enterprise_id":"E0001",
+  "enterprise_name":"Globular%20Construct%20Inc",
+  "channel_id":"C2147483705",
+  "channel_name":"test",
+  "user_id":"U2147483697",
+  "user_name":"Devi",
+  "command":"/reservations",
+  "text":"create staging 3 hrs",
+  "response_url":"https://hooks.slack.com/commands/1234/5678"
+}
