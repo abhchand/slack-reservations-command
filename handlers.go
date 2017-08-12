@@ -6,6 +6,7 @@ import (
     "io"
     "io/ioutil"
     "net/http"
+    "net/url"
     "os"
     "path/filepath"
     "regexp"
@@ -103,7 +104,8 @@ func parseSlackRequest(r *http.Request) (SlackRequest, error) {
     var err error
     var slack_request SlackRequest
 
-    body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+    // Read the body
+    body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576 /*1MB*/))
     if err != nil {
         log.Error("Could not ready request body")
         return slack_request, err
@@ -115,13 +117,31 @@ func parseSlackRequest(r *http.Request) (SlackRequest, error) {
         return slack_request, err
     }
 
-    log.Debugf("Received slack request: \"%v\"", string(body))
+    request_str := string(body)
+    log.Debugf("Received slack request: \"%v\"", request_str)
 
-    err = json.Unmarshal(body, &slack_request)
-    if err != nil {
-        log.Errorf("Could not unmarshal body: %v", body)
-        return slack_request, err
-    }
+    // URL-Decode the request body
+    request_str, err = url.PathUnescape(request_str)
+    if err != nil { log.Error("Could not unescape request body") }
+
+    // Parse the query parameters
+    qp, err := url.ParseQuery(request_str)
+    if err != nil { log.Error("Could not parse query params") }
+
+    // Populate the struct
+    slack_request.Token           = qp.Get("token")
+    slack_request.TeamId          = qp.Get("team_id")
+    slack_request.TeamDomain      = qp.Get("team_domain")
+    slack_request.EnterpriseId    = qp.Get("enterprise_id")
+    slack_request.EnterpriseName  = qp.Get("enterprise_name")
+    slack_request.ChannelId       = qp.Get("channel_id")
+    slack_request.ChannelName     = qp.Get("channel_name")
+    slack_request.UserId          = qp.Get("user_id")
+    slack_request.UserName        = qp.Get("user_name")
+    slack_request.Command         = qp.Get("command")
+    slack_request.Text            = qp.Get("text")
+    slack_request.ResponseUrl     = qp.Get("response_url")
+    slack_request.TriggerId       = qp.Get("trigger_id")
 
     return slack_request, nil
 
@@ -132,7 +152,7 @@ Run this locally with:
 
 curl -XPOST \
      -H "Content-Type: application/json" \
-     -d @example/help.json \
+     -d @example/help \
      http://localhost:8080/slack/commands/reservations
 
 */
@@ -171,7 +191,7 @@ Run this locally with:
 
 curl -XPOST \
      -H "Content-Type: application/json" \
-     -d @example/list.json \
+     -d @example/list \
      http://localhost:8080/slack/commands/reservations
 
 */
@@ -214,7 +234,7 @@ Run this locally with:
 
 curl -XPOST \
      -H "Content-Type: application/json" \
-     -d @example/reserve.json \
+     -d @example/create \
      http://localhost:8080/slack/commands/reservations
 
 */
@@ -294,7 +314,7 @@ Run this locally with:
 
 curl -XPOST \
      -H "Content-Type: application/json" \
-     -d @example/extend.json \
+     -d @example/extend \
      http://localhost:8080/slack/commands/reservations
 
 */
@@ -368,7 +388,7 @@ Run this locally with:
 
 curl -XPOST \
      -H "Content-Type: application/json" \
-     -d @example/cancel.json \
+     -d @example/cancel \
      http://localhost:8080/slack/commands/reservations
 
 */
