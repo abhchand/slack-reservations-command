@@ -2,6 +2,8 @@ package main
 
 import (
     "encoding/json"
+    "errors"
+    "fmt"
     "io/ioutil"
 )
 
@@ -59,15 +61,25 @@ func (r Reservations) FindByResource(resource string) Reservation {
 
 }
 
-func (r Reservations) Upsert(resource string, reservation Reservation) {
+func (r Reservations) Upsert(resource string, reservation Reservation) error {
+
+    if !IsValidResource(resource) {
+        return errors.New(fmt.Sprintf("Invalid Resource: %v", resource))
+    }
 
     r[resource] = reservation
+    return nil
 
 }
 
-func (r Reservations) Delete(resource string) {
+func (r Reservations) Delete(resource string) error {
+
+    if !IsValidResource(resource) {
+        return errors.New(fmt.Sprintf("Invalid Resource: %v", resource))
+    }
 
     if (r[resource] != Reservation{}) { delete(r, resource) }
+    return nil
 
 }
 
