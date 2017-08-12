@@ -296,9 +296,21 @@ func handleCommandReserve(slack_request SlackRequest) (SlackResponse, bool) {
     // Create new reservation
     reservation = Reservation{User: slack_request.UserName, EndAt: endAt}
 
-    // Update and save to file
-    reservations.Upsert(resource, reservation)
-    reservations.WriteToFile()
+    // Update
+    err = reservations.Upsert(resource, reservation)
+    if err != nil {
+        if regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
+            response.Text = fmt.Sprintf("I don't know how to reserve \"*%v*\"")
+            return response, true
+        } else {
+            log.Error(err)
+            return response, false
+        }
+    }
+
+    // Save to file
+    err = reservations.WriteToFile()
+    if err != nil { log.Error(err); return response, false }
 
     // Construct a response for the user
     response.Text = fmt.Sprintf(
@@ -368,9 +380,26 @@ func handleCommandExtend(slack_request SlackRequest) (SlackResponse, bool) {
     // Update reservation
     reservation.EndAt = endAt
 
-    // Update and save to file
-    reservations.Upsert(resource, reservation)
-    reservations.WriteToFile()
+    // Update
+    err = reservations.Upsert(resource, reservation)
+    if err != nil {
+        if regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
+            response.Text = fmt.Sprintf(
+                "I don't what \"*%v*\" is. Did you misspell it?\n" +
+                    "Valid resources: %v",
+                resource,
+                ListOfResources(),
+            )
+            return response, true
+        } else {
+            log.Error(err)
+            return response, false
+        }
+    }
+
+    // Save to file
+    err = reservations.WriteToFile()
+    if err != nil { log.Error(err); return response, false }
 
     // Construct a response for the user
     response.Text = fmt.Sprintf(
@@ -419,9 +448,26 @@ func handleCommandCancel(slack_request SlackRequest) (SlackResponse, bool) {
         return response, true
     }
 
-    // Cancel reservation and save to file
-    reservations.Delete(resource)
-    reservations.WriteToFile()
+    // Delete
+    err = reservations.Delete(resource)
+    if err != nil {
+        if regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
+            response.Text = fmt.Sprintf(
+                "I don't what \"*%v*\" is. Did you misspell it?\n" +
+                    "Valid resources: %v",
+                resource,
+                ListOfResources(),
+            )
+            return response, true
+        } else {
+            log.Error(err)
+            return response, false
+        }
+    }
+
+    // Save to file
+    err = reservations.WriteToFile()
+    if err != nil { log.Error(err); return response, false }
 
     // Construct a response for the user
     response.Text = fmt.Sprintf(
