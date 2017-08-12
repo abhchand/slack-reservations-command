@@ -100,33 +100,6 @@ func TestNewReservations(t *testing.T) {
         }
     })
 
-    t.Run("InvalidFile", func(t *testing.T) {
-
-        data := Reservations{
-            "development": Reservation{User:"foo", EndAt:time.Now()},
-            "foo": Reservation{User:"foo", EndAt:time.Now()},
-        }
-
-        body, err := json.Marshal(data)
-        if err != nil { panic(err) }
-        writeToReservationsFile(string(body))
-
-
-        // Test
-
-        _, err = NewReservations()
-
-        actual := err.Error()
-        expected := "Resource foo is not a valid resource"
-
-        if actual != expected {
-            t.Error(
-                "expected", expected,
-                "got", actual,
-            )
-        }
-    })
-
 }
 
 
@@ -167,27 +140,6 @@ func TestWriteToFile(t *testing.T) {
         body, err := ioutil.ReadFile(reservations_file)
         if err != nil { t.Error("Error reading from file", err) }
         actual := string(body)
-
-        if actual != expected {
-            t.Error(
-                "expected", expected,
-                "got", actual,
-            )
-        }
-
-    })
-
-    t.Run("InvalidFile", func(t *testing.T) {
-
-        reservations := Reservations{
-            "development": Reservation{User:"foo", EndAt:time.Now()},
-            "foo": Reservation{User:"foo", EndAt:time.Now()},
-        }
-
-        err := reservations.WriteToFile()
-
-        actual := err.Error()
-        expected := "Resource foo is not a valid resource"
 
         if actual != expected {
             t.Error(
