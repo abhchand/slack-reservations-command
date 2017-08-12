@@ -176,7 +176,7 @@ func handleCommandHelp(slack_request SlackRequest) (SlackResponse, bool) {
 ` + "`/reservations extend (resource) (duration - mins/minutes/hrs/hours)`" + `
 ` + fmt.Sprintf("`/reservations extend %v 20 mins`", example_resource) + `
 
-*cancle* - Cancel an existing reservation
+*cancel* - Cancel an existing reservation
 ` + "`/reservations cancel (resource)`" + `
 ` + fmt.Sprintf("`/reservations cancel %v`", example_resource) + `
 
@@ -213,7 +213,7 @@ func handleCommandList(slack_request SlackRequest) (SlackResponse, bool) {
         reservation := reservations[resource]
         if (reservation != Reservation{}) && reservation.IsActive() {
             response_text += fmt.Sprintf(
-                "%v (reserved by %v, expires in %v)\n",
+                "→  %v (reserved by %v, expires in %v)\n",
                 resource,
                 reservation.User,
                 reservation.RemainingTimeToString())
