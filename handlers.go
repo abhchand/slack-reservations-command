@@ -162,25 +162,25 @@ func handleCommandHelp(slack_request SlackRequest) (SlackResponse, bool) {
     example_resource := resources[0]
 
     help_text := `
+    _*Reservations Bot*_
     A basic reservations system for shared resources
 
 *list* - List all resources and any reservations
 ` + "`/reservations list`" + `
 
 *create* - Create a new reservation
-` + "`/reservations create (resource) (duration)`" + `
+` + "`/reservations create (resource) (duration - mins/minutes/hrs/hours)`" + `
 ` + fmt.Sprintf("`/reservations create %v 3 hours`", example_resource) + `
 
 *extend* - Extend an existing reservation
-` + "`/reservations extend (resource) (duration)`" + `
+` + "`/reservations extend (resource) (duration - mins/minutes/hrs/hours)`" + `
 ` + fmt.Sprintf("`/reservations extend %v 20 mins`", example_resource) + `
 
-*create* - Cancel an existing reservation
+*cancle* - Cancel an existing reservation
 ` + "`/reservations cancel (resource)`" + `
 ` + fmt.Sprintf("`/reservations cancel %v`", example_resource) + `
 
-Duration units can be singular or plural form of:
-    mins, minutes, hrs, hours
+
 `
 
     return SlackResponse{Text: help_text}, true
@@ -206,20 +206,20 @@ func handleCommandList(slack_request SlackRequest) (SlackResponse, bool) {
         return response, false
     }
 
-    response_text := "Reservations\n\n"
+    response_text := "\n_*Reservations*_\n\n"
 
     for _, resource := range ListOfResources() {
 
         reservation := reservations[resource]
         if (reservation != Reservation{}) && reservation.IsActive() {
             response_text += fmt.Sprintf(
-                "%v (reserved by @%v, expires in %v)\n",
+                "%v (reserved by %v, expires in %v)\n",
                 resource,
                 reservation.User,
                 reservation.RemainingTimeToString())
         } else {
             response_text += fmt.Sprintf(
-                "%v (free)\n",
+                "→  %v (free)\n",
                 resource)
         }
     }
@@ -261,12 +261,12 @@ func handleCommandReserve(slack_request SlackRequest) (SlackResponse, bool) {
     if reservation.IsPresent() && reservation.IsActive(){
         if slack_request.UserName == reservation.User {
             response.Text = fmt.Sprintf(
-                "You've already reserved resource *%v* for the next *%v*",
+                "You've already reserved \"*%v*\" for the next *%v*",
                 resource,
                 reservation.RemainingTimeToString())
         } else {
             response.Text = fmt.Sprintf(
-                "@%v has has already reserved resource *%v* for the next *%v*",
+                "%v has reserved \"*%v*\" for the next *%v*",
                 reservation.User,
                 resource,
                 reservation.RemainingTimeToString())
@@ -302,7 +302,7 @@ func handleCommandReserve(slack_request SlackRequest) (SlackResponse, bool) {
 
     // Construct a response for the user
     response.Text = fmt.Sprintf(
-        "You have reserved resource *%v* for the next *%v*",
+        "You've successfully reserved \"*%v*\" for the next *%v*",
         resource,
         reservation.RemainingTimeToString())
 
@@ -341,7 +341,7 @@ func handleCommandExtend(slack_request SlackRequest) (SlackResponse, bool) {
             !reservation.IsActive() ||
             slack_request.UserName != reservation.User {
         response.Text = fmt.Sprintf(
-                "You do not have any reservation to extend on resource *%v*",
+                "You don't have an existing reservation on \"*%v*\" to extend",
                 resource)
 
         return response, true
@@ -374,7 +374,7 @@ func handleCommandExtend(slack_request SlackRequest) (SlackResponse, bool) {
 
     // Construct a response for the user
     response.Text = fmt.Sprintf(
-        "You have extended your reservation on resource *%v*. It now expires" +
+        "You have extended your reservation on \"*%v*\". It now expires" +
         " in *%v*",
         resource,
         reservation.RemainingTimeToString())
@@ -413,7 +413,7 @@ func handleCommandCancel(slack_request SlackRequest) (SlackResponse, bool) {
             !reservation.IsActive() ||
             slack_request.UserName != reservation.User {
         response.Text = fmt.Sprintf(
-                "You do not have any reservation to cancel on resource *%v*",
+                "You don't have an existing reservation on \"*%v*\" to cancel",
                 resource)
 
         return response, true
@@ -425,7 +425,7 @@ func handleCommandCancel(slack_request SlackRequest) (SlackResponse, bool) {
 
     // Construct a response for the user
     response.Text = fmt.Sprintf(
-        "Your reservation on resource *%v* has been cancelled",
+        "Your reservation on \"*%v*\" has been cancelled",
         resource)
 
     return response, true
@@ -471,7 +471,8 @@ func buildInvalidResponse(w http.ResponseWriter) {
 func buildErrorResponse(w http.ResponseWriter) {
 
     response := SlackResponse{
-        Text: "Uh oh, there was a problem handling your request",
+        Text: "Sorry, I couldn't understand your request.\nType " +
+            "/reservations help for more info",
     }
     buildResponse(response, w)
 
