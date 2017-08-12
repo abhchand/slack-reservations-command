@@ -15,3 +15,16 @@ func ListOfResources() []string {
     return resources
 
 }
+
+func IsValidResource(resource string) bool {
+
+    resources := ListOfResources()
+    present := false
+
+    for _, r := range resources {
+        if resource == r { present = true; break }
+    }
+
+    return present
+
+}

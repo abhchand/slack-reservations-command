@@ -28,3 +28,28 @@ func TestListOfResources(t *testing.T) {
     }
 
 }
+
+func TestIsValidResource(t *testing.T) {
+
+    // Setup
+    old_env := os.Getenv("RESOURCES")
+    defer os.Setenv("RESOURCES", old_env)
+    os.Setenv("RESOURCES", "development, staging")
+
+    test_cases := map[string]bool{
+        "development": true,
+        "foo": false,
+    }
+
+    for resource, expected := range test_cases {
+        actual := IsValidResource(resource)
+
+        if actual != expected {
+            t.Error(
+                "expected", expected,
+                "got", actual,
+            )
+        }
+    }
+
+}
