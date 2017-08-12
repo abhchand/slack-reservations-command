@@ -6,6 +6,7 @@ import(
     "path/filepath"
     "io/ioutil"
     "os"
+    "regexp"
     "testing"
     "time"
 )
@@ -102,7 +103,6 @@ func TestNewReservations(t *testing.T) {
 
 }
 
-
 func TestWriteToFile(t *testing.T) {
 
     //
@@ -182,6 +182,186 @@ func TestWriteToFile(t *testing.T) {
 
     })
 
+}
+
+func TestFindByResource(t *testing.T) {
+
+    old_env := os.Getenv("RESOURCES")
+    defer os.Setenv("RESOURCES", old_env)
+    os.Setenv("RESOURCES", "development, staging")
+
+    reservations_file = filepath.Join(
+        reservations_dir, "reservations-test.json")
+
+    r1 := Reservation{User:"abc", EndAt:time.Now().AddDate(0, 0, 1)}
+    r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
+    reservations := Reservations{"development": r1, "staging": r2}
+
+    test_cases := map[string]Reservation{
+        "development": r1,
+        "foo": Reservation{},
+    }
+
+    for resource, expected := range test_cases {
+        actual := reservations.FindByResource(resource)
+
+        if actual != expected {
+            t.Error(
+                "expected", expected,
+                "got", actual,
+            )
+        }
+    }
+}
+
+func TestUpsert(t *testing.T) {
+
+    // Setup
+
+    old_env := os.Getenv("RESOURCES")
+    defer os.Setenv("RESOURCES", old_env)
+    os.Setenv("RESOURCES", "development, staging")
+
+    reservations_file = filepath.Join(
+        reservations_dir, "reservations-test.json")
+
+    t.Run("Success", func(t *testing.T) {
+
+        r1 := Reservation{User:"abc", EndAt:time.Now().AddDate(0, 0, 1)}
+        r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
+        r3 := Reservation{User:"ghi", EndAt:time.Now().AddDate(0, 0, 1)}
+
+        reservations := Reservations{"development": r1, "staging": r2}
+
+        err := reservations.Upsert("staging", r3)
+
+        if err != nil {
+            t.Error("Expected no error, got", err)
+        }
+
+        if actual := reservations.FindByResource("development"); actual != r1 {
+            t.Error("expected", r1, "got", actual)
+        }
+
+        if actual := reservations.FindByResource("staging"); actual != r3 {
+            t.Error("expected", r3, "got", actual)
+        }
+
+    })
+
+    t.Run("InvalidResource", func(t *testing.T) {
+
+        r1 := Reservation{User:"abc", EndAt:time.Now().AddDate(0, 0, 1)}
+        r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
+        r3 := Reservation{User:"ghi", EndAt:time.Now().AddDate(0, 0, 1)}
+
+        reservations := Reservations{"development": r1, "staging": r2}
+
+        err := reservations.Upsert("foo", r3)
+
+        if err == nil ||
+                !regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
+            t.Error("expect error message /Invalid Resource/, got", err)
+        }
+
+        // Check that existing values remain unchanged
+
+        if actual := reservations.FindByResource("development"); actual != r1 {
+            t.Error("expected", r1, "got", actual)
+        }
+
+        if actual := reservations.FindByResource("staging"); actual != r2 {
+            t.Error("expected", r2, "got", actual)
+        }
+
+    })
+}
+
+func TestDelete(t *testing.T) {
+
+    // Setup
+
+    old_env := os.Getenv("RESOURCES")
+    defer os.Setenv("RESOURCES", old_env)
+    os.Setenv("RESOURCES", "development, staging")
+
+    reservations_file = filepath.Join(
+        reservations_dir, "reservations-test.json")
+
+    t.Run("Success", func(t *testing.T) {
+
+        r1 := Reservation{User:"abc", EndAt:time.Now().AddDate(0, 0, 1)}
+        r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
+        zero_value := Reservation{}
+
+        reservations := Reservations{"development": r1, "staging": r2}
+
+        err := reservations.Delete("staging")
+
+        if err != nil {
+            t.Error("Expected no error, got", err)
+        }
+
+        if actual := reservations.FindByResource("development"); actual != r1 {
+            t.Error("expected", r1, "got", actual)
+        }
+
+        if actual := reservations.FindByResource("staging"); actual != zero_value {
+            t.Error("expected", zero_value, "got", actual)
+        }
+
+    })
+
+    t.Run("InvalidResource", func(t *testing.T) {
+
+        r1 := Reservation{User:"abc", EndAt:time.Now().AddDate(0, 0, 1)}
+        r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
+
+        reservations := Reservations{"development": r1, "staging": r2}
+
+        err := reservations.Delete("foo")
+
+        if err == nil ||
+                !regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
+            t.Error("expect error message /Invalid Resource/, got", err)
+        }
+
+        // Check that existing values remain unchanged
+
+        if actual := reservations.FindByResource("development"); actual != r1 {
+            t.Error("expected", r1, "got", actual)
+        }
+
+        if actual := reservations.FindByResource("staging"); actual != r2 {
+            t.Error("expected", r2, "got", actual)
+        }
+
+    })
+
+    t.Run("NoValueForResource", func(t *testing.T) {
+
+        r1 := Reservation{User:"abc", EndAt:time.Now().AddDate(0, 0, 1)}
+        zero_value := Reservation{}
+
+        reservations := Reservations{"development": r1}
+
+        err := reservations.Delete("staging")
+
+        if err != nil {
+            t.Error("Expected no error, got", err)
+        }
+
+        // Check that existing values remain unchanged
+
+        if actual := reservations.FindByResource("development"); actual != r1 {
+            t.Error("expected", r1, "got", actual)
+        }
+
+        if actual := reservations.FindByResource("staging"); actual != zero_value {
+            t.Error("expected", zero_value, "got", actual)
+        }
+
+    })
 }
 
 func writeToReservationsFile(body string) error {
