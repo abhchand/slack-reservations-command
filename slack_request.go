@@ -17,6 +17,7 @@ type SlackRequest struct {
     Command         string  `json:"command"`
     Text            string  `json:"text"`
     ResponseUrl     string  `json:"response_url"`
+    TriggerId       string  `json:"trigger_id"`
 }
 
 func (sr SlackRequest) FormattedSubcommand() string {

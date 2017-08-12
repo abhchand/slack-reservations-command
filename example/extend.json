@@ -10,5 +10,6 @@
   "user_name":"Devi",
   "command":"/reservations",
   "text":"extend staging 30 mins",
-  "response_url":"https://hooks.slack.com/commands/1234/5678"
+  "response_url":"https://hooks.slack.com/commands/1234/5678",
+  "trigger_id": "226962359559.18717021060.939cbef02c3d7878384dfb67cecab512"
 }

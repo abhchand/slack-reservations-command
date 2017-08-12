@@ -92,7 +92,7 @@ func isValidSlackVerificationToken(s SlackRequest) bool {
     token := os.Getenv("SLACK_VERIFICATION_TOKEN")
     valid := (token == s.Token)
 
-    if !valid { log.Errorf("Invalid Slack token %v", token) }
+    if !valid { log.Errorf("Invalid Slack token %v", s.Token) }
 
     return os.Getenv("SLACK_VERIFICATION_TOKEN") == s.Token
 
@@ -114,6 +114,8 @@ func parseSlackRequest(r *http.Request) (SlackRequest, error) {
         log.Error("Could not close body")
         return slack_request, err
     }
+
+    log.Debugf("Received slack request: \"%v\"", string(body))
 
     err = json.Unmarshal(body, &slack_request)
     if err != nil {
