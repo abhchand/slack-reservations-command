@@ -175,7 +175,6 @@ func handleCommandHelp(slack_request SlackRequest) (SlackResponse, bool) {
 *extend* - Extend an existing reservation
 ` + "`/reservations extend (resource) (duration)`" + `
 ` + fmt.Sprintf("`/reservations extend %v by 20 mins`", example_resource) + `
-` + fmt.Sprintf("`/reservations extend %v for 1 hr`", example_resource) + `
 
 *cancel* - Cancel an existing reservation
 ` + "`/reservations cancel (resource)`" + `
