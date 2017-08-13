@@ -29,10 +29,10 @@ var reservations_dir    = "/tmp"
 var reservations_file   = filepath.Join(reservations_dir, "reservations.json")
 
 var subcmd_help_regex       = regexp.MustCompile("\\Ahelp\\z")
-var subcmd_status_regex     = regexp.MustCompile("\\Alist\\z")
-var subcmd_reserve_regex    = regexp.MustCompile("\\Acreate (.*) (\\d*) (mins?|minutes?|hrs?|hours?)\\z")
-var subcmd_extend_regex     = regexp.MustCompile("\\Aextend (.*) (\\d*) (mins?|minutes?|hrs?|hours?)\\z")
-var subcmd_cancel_regex     = regexp.MustCompile("\\Acancel (.*)\\z")
+var subcmd_show_regex       = regexp.MustCompile("\\A(list|ls)\\z")
+var subcmd_create_regex     = regexp.MustCompile("\\Areserve (.*) for (\\d*) (mins?|minutes?|hrs?|hours?)\\z")
+var subcmd_update_regex     = regexp.MustCompile("\\Aextend (.*) by (\\d*) (mins?|minutes?|hrs?|hours?)\\z")
+var subcmd_destroy_regex    = regexp.MustCompile("\\Acancel (.*)\\z")
 
 func MainHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -61,21 +61,21 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
         log.Debug("Handling command: `help`")
         slack_response, success = handleCommandHelp(slack_request)
 
-    case subcmd_status_regex.MatchString(command):
-        log.Debug("Handling command: `list`")
-        slack_response, success = handleCommandList(slack_request)
+    case subcmd_show_regex.MatchString(command):
+        log.Debug("Handling command: `show`")
+        slack_response, success = handleCommandShow(slack_request)
 
-    case subcmd_reserve_regex.MatchString(command):
-        log.Debug("Handling command: `reserve`")
-        slack_response, success = handleCommandReserve(slack_request)
+    case subcmd_create_regex.MatchString(command):
+        log.Debug("Handling command: `create`")
+        slack_response, success = handleCommandCreate(slack_request)
 
-    case subcmd_extend_regex.MatchString(command):
-        log.Debug("Handling command: `extend`")
-        slack_response, success = handleCommandExtend(slack_request)
+    case subcmd_update_regex.MatchString(command):
+        log.Debug("Handling command: `update`")
+        slack_response, success = handleCommandUpdate(slack_request)
 
-    case subcmd_cancel_regex.MatchString(command):
-        log.Debug("Handling command: `cancel`")
-        slack_response, success = handleCommandCancel(slack_request)
+    case subcmd_destroy_regex.MatchString(command):
+        log.Debug("Handling command: `destroy`")
+        slack_response, success = handleCommandDestroy(slack_request)
 
     default:
         buildErrorResponse(w)
@@ -163,22 +163,29 @@ func handleCommandHelp(slack_request SlackRequest) (SlackResponse, bool) {
 
     help_text := `
     _*Reservations Bot*_
-    A basic reservations system for shared resources
+    I'm a basic reservations system for shared resources
 
-*list* - List all resources and any reservations
+*list* (or *ls*) - List all resources and any reservations
 ` + "`/reservations list`" + `
 
-*create* - Create a new reservation
-` + "`/reservations create (resource) (duration - mins/minutes/hrs/hours)`" + `
-` + fmt.Sprintf("`/reservations create %v 3 hours`", example_resource) + `
+*reserve* - Create a new reservation
+` + "`/reservations reserve (resource) (duration)`" + `
+` + fmt.Sprintf("`/reservations reserve %v for 3 hours`", example_resource) + `
 
 *extend* - Extend an existing reservation
-` + "`/reservations extend (resource) (duration - mins/minutes/hrs/hours)`" + `
-` + fmt.Sprintf("`/reservations extend %v 20 mins`", example_resource) + `
+` + "`/reservations extend (resource) (duration)`" + `
+` + fmt.Sprintf("`/reservations extend %v by 20 mins`", example_resource) + `
+` + fmt.Sprintf("`/reservations extend %v for 1 hr`", example_resource) + `
 
 *cancel* - Cancel an existing reservation
 ` + "`/reservations cancel (resource)`" + `
 ` + fmt.Sprintf("`/reservations cancel %v`", example_resource) + `
+
+
+_Psst..._
+
+- _I understand minutes and hours - abbreviated, singular, or plural_
+- _Don't like typing? Feel free to leave out filler words like "for" or "by"_
 
 
 `
@@ -191,11 +198,11 @@ Run this locally with:
 
 curl -XPOST \
      -H "Content-Type: application/json" \
-     -d @example/list \
+     -d @example/show \
      http://localhost:8080/slack/commands/reservations
 
 */
-func handleCommandList(slack_request SlackRequest) (SlackResponse, bool) {
+func handleCommandShow(slack_request SlackRequest) (SlackResponse, bool) {
 
     response := SlackResponse{}
 
@@ -238,13 +245,13 @@ curl -XPOST \
      http://localhost:8080/slack/commands/reservations
 
 */
-func handleCommandReserve(slack_request SlackRequest) (SlackResponse, bool) {
+func handleCommandCreate(slack_request SlackRequest) (SlackResponse, bool) {
 
     command  := slack_request.FormattedSubcommand()
     response := SlackResponse{}
 
     // Extract data from command
-    matches     := subcmd_reserve_regex.FindStringSubmatch(command)
+    matches     := subcmd_create_regex.FindStringSubmatch(command)
     resource    := matches[1]
     time_value  := matches[2]
     unit        := matches[3]
@@ -326,17 +333,17 @@ Run this locally with:
 
 curl -XPOST \
      -H "Content-Type: application/json" \
-     -d @example/extend \
+     -d @example/update \
      http://localhost:8080/slack/commands/reservations
 
 */
-func handleCommandExtend(slack_request SlackRequest) (SlackResponse, bool) {
+func handleCommandUpdate(slack_request SlackRequest) (SlackResponse, bool) {
 
     command  := slack_request.FormattedSubcommand()
     response := SlackResponse{}
 
     // Extract data from command
-    matches     := subcmd_extend_regex.FindStringSubmatch(command)
+    matches     := subcmd_update_regex.FindStringSubmatch(command)
     resource    := matches[1]
     time_value  := matches[2]
     unit        := matches[3]
@@ -419,17 +426,17 @@ Run this locally with:
 
 curl -XPOST \
      -H "Content-Type: application/json" \
-     -d @example/cancel \
+     -d @example/destroy \
      http://localhost:8080/slack/commands/reservations
 
 */
-func handleCommandCancel(slack_request SlackRequest) (SlackResponse, bool) {
+func handleCommandDestroy(slack_request SlackRequest) (SlackResponse, bool) {
 
     command  := slack_request.FormattedSubcommand()
     response := SlackResponse{}
 
     // Extract data from command
-    matches     := subcmd_cancel_regex.FindStringSubmatch(command)
+    matches     := subcmd_destroy_regex.FindStringSubmatch(command)
     resource    := matches[1]
 
     // Check that resource is valid
@@ -511,7 +518,8 @@ func ensureReservationsFileExists() error {
 func unknownResourceText(resource string) string {
 
     return fmt.Sprintf(
-        "I don't what \"*%v*\" is. Did you misspell it?\nValid resources: %v",
+        "I don't know what \"*%v*\" is. Did you misspell it?\n" +
+            "Valid resources: %v",
         resource,
         ListOfResources(),
     )
