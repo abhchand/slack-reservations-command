@@ -353,7 +353,8 @@ func handleCommandExtend(slack_request SlackRequest) (SlackResponse, bool) {
             !reservation.IsActive() ||
             slack_request.UserName != reservation.User {
         response.Text = fmt.Sprintf(
-                "You don't have an existing reservation on \"*%v*\" to extend",
+                "You don't have any reservation on \"*%v*\" to extend\n\n" +
+                    "Type `/reservations list` to list current reservations",
                 resource)
 
         return response, true
@@ -446,7 +447,8 @@ func handleCommandCancel(slack_request SlackRequest) (SlackResponse, bool) {
             !reservation.IsActive() ||
             slack_request.UserName != reservation.User {
         response.Text = fmt.Sprintf(
-                "You don't have an existing reservation on \"*%v*\" to cancel",
+                "You don't have any reservation on \"*%v*\" to cancel\n\n" +
+                    "Type `/reservations list` to list current reservations",
                 resource)
 
         return response, true
