@@ -537,7 +537,7 @@ func buildErrorResponse(w http.ResponseWriter) {
 
     response := SlackResponse{
         Text: "Sorry, I couldn't understand your request.\nType " +
-            "/reservations help for more info",
+            "`/reservations help` for more info",
     }
     buildResponse(response, w)
 
