@@ -16,7 +16,7 @@ func NewRouter() *mux.Router {
 
         // Decorate each handler with a call to Logger, which will log
         // before/after DEBUG statements
-        handler = Logger(handler, route.Name)
+        handler = DecorateWithLogger(handler, route.Name)
 
         router.
             Methods(route.Method).
