@@ -300,7 +300,7 @@ func handleCommandReserve(slack_request SlackRequest) (SlackResponse, bool) {
     err = reservations.Upsert(resource, reservation)
     if err != nil {
         if regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
-            response.Text = fmt.Sprintf("I don't know how to reserve \"*%v*\"")
+            response.Text = unknownResourceText(resource)
             return response, true
         } else {
             log.Error(err)
@@ -384,12 +384,7 @@ func handleCommandExtend(slack_request SlackRequest) (SlackResponse, bool) {
     err = reservations.Upsert(resource, reservation)
     if err != nil {
         if regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
-            response.Text = fmt.Sprintf(
-                "I don't what \"*%v*\" is. Did you misspell it?\n" +
-                    "Valid resources: %v",
-                resource,
-                ListOfResources(),
-            )
+            response.Text = unknownResourceText(resource)
             return response, true
         } else {
             log.Error(err)
@@ -452,12 +447,7 @@ func handleCommandCancel(slack_request SlackRequest) (SlackResponse, bool) {
     err = reservations.Delete(resource)
     if err != nil {
         if regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
-            response.Text = fmt.Sprintf(
-                "I don't what \"*%v*\" is. Did you misspell it?\n" +
-                    "Valid resources: %v",
-                resource,
-                ListOfResources(),
-            )
+            response.Text = unknownResourceText(resource)
             return response, true
         } else {
             log.Error(err)
@@ -504,6 +494,15 @@ func ensureReservationsFileExists() error {
 
 }
 
+func unknownResourceText(resource string) string {
+
+    return fmt.Sprintf(
+        "I don't what \"*%v*\" is. Did you misspell it?\nValid resources: %v",
+        resource,
+        ListOfResources(),
+    )
+
+}
 
 func buildInvalidResponse(w http.ResponseWriter) {
 
