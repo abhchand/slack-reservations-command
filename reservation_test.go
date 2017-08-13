@@ -53,28 +53,44 @@ func TestIsActive(t *testing.T) {
 
 func TestRemainingTimeToString(t *testing.T) {
 
-    data := map[int]string{
-        // Minutes: Expected result
-        (2*1440 + 120): "2 days, 2 hours",
-        (2*1440 + 60):  "2 days, 1 hour",
-        (2*1440 + 0):   "2 days, 0 hours",
-        (1*1440 + 120): "1 day, 2 hours",
-        (1*1440 + 60):  "1 day, 1 hour",
-        (1*1440 + 0):   "1 day, 0 hours",
-        (2*60 + 30):    "2 hours, 30 minutes",
-        (2*60 + 1):     "2 hours, 1 minute",
-        (2*60 + 0):     "2 hours, 0 minutes",
-        (1*60 + 30):    "1 hour, 30 minutes",
-        (1*60 + 1):     "1 hour, 1 minute",
-        (1*60 + 0):     "1 hour, 0 minutes",
-        (30):           "30 minutes",
-        (1):            "1 minute",
-        (0):            "0 minutes",
+    // Re-define for readability below
+    secs := 1
+    mins := SECS_PER_MINUTE
+    hrs  := SECS_PER_HOUR
+    days := SECS_PER_DAY
+
+    test_cases := map[int]string{
+
+        // Days remaining
+        (2*days +  2*hrs +  0*mins +  0*secs): "2 days, 2 hours",
+        (2*days +  1*hrs +  0*mins +  0*secs): "2 days, 1 hour",
+        (2*days +  0*hrs +  0*mins +  0*secs): "2 days, 0 hours",
+        (1*days +  2*hrs +  0*mins +  0*secs): "1 day, 2 hours",
+        (1*days +  1*hrs +  0*mins +  0*secs): "1 day, 1 hour",
+        (1*days +  0*hrs +  0*mins +  0*secs): "1 day, 0 hours",
+
+        // Hours remaining
+        (0*days +  2*hrs + 30*mins +  0*secs): "2 hours, 30 minutes",
+        (0*days +  2*hrs +  1*mins +  0*secs): "2 hours, 1 minute",
+        (0*days +  2*hrs +  0*mins +  0*secs): "2 hours, 0 minutes",
+        (0*days +  1*hrs + 30*mins +  0*secs): "1 hour, 30 minutes",
+        (0*days +  1*hrs +  1*mins +  0*secs): "1 hour, 1 minute",
+        (0*days +  1*hrs +  0*mins +  0*secs): "1 hour, 0 minutes",
+
+        // Minutes remaining
+        (0*days +  0*hrs + 30*mins +  0*secs): "30 minutes",
+        (0*days +  0*hrs +  1*mins +  0*secs): "1 minute",
+        (0*days +  0*hrs +  0*mins +  0*secs): "0 minutes",
+
+        // Rounding up
+        (0*days +  0*hrs +  0*mins +  1*secs): "1 minute",
+        (0*days +  0*hrs + 59*mins +  1*secs): "1 hour, 0 minutes",
+        (0*days + 23*hrs + 59*mins +  1*secs): "1 day, 0 hours",
     }
 
-    for minutes, expected := range data {
+    for seconds, expected := range test_cases {
 
-        endAt := time.Now().Local().Add(time.Minute * time.Duration(minutes))
+        endAt := time.Now().Local().Add(time.Second * time.Duration(seconds))
 
         actual := Reservation{User:"foo", EndAt:endAt}.RemainingTimeToString()
 

@@ -31,15 +31,9 @@ func (r Reservation) RemainingTimeToString() string {
 
     if !r.IsActive() { return r.formatDuration(0.0, "minute") }
 
-    // When someone reserves a resource for "3 hours" they get a response
-    // with "2 hours, 59 minutes".
-    // This is because making the web request takes some non-zero amount of
-    // time and the logic rounds *down*
-    // Just add 3.0 seconds to work around this problem. It's small enough
-    // to not matter, but will keep the output correctly formatted
-    // Slack requests also time out after 3 seconds (3000ms) so this should
-    // be the maximum time needed
-    s := r.EndAt.Sub(time.Now()).Seconds() + 3.0
+    // Get the number of seconds elapse, but round up to the nearest minute
+    // first
+    s := math.Ceil(r.EndAt.Sub(time.Now()).Minutes()) * SECS_PER_MINUTE
 
     switch {
 
