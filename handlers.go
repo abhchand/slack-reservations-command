@@ -182,10 +182,7 @@ func handleCommandHelp(slack_request SlackRequest) (SlackResponse, bool) {
 ` + fmt.Sprintf("`/reservations cancel %v`", example_resource) + `
 
 
-_Psst..._
-
-- _I understand minutes and hours - abbreviated, singular, or plural_
-- _Don't like typing? Feel free to leave out filler words like "for" or "by"_
+_Psst...I understand "minutes" and "hours" - abbreviated, singular, or plural_
 
 
 `
