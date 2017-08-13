@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"regexp"
 	"testing"
 	"time"
@@ -21,8 +20,7 @@ func TestNewReservations(t *testing.T) {
 	defer os.Setenv("RESOURCES", old_env)
 	os.Setenv("RESOURCES", "production, staging")
 
-	reservations_file = filepath.Join(
-		reservations_dir, "reservations-test.json")
+	reservations_file = reservations_file + ".test"
 
 	t.Run("Success", func(t *testing.T) {
 
@@ -37,7 +35,11 @@ func TestNewReservations(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		writeToReservationsFile(string(body))
+
+		err = writeToReservationsFile(string(body))
+		if err != nil {
+			t.Error("Expected no error writing to file. Got", err)
+		}
 
 		actual, err := NewReservations()
 		if err != nil {
@@ -66,10 +68,13 @@ func TestNewReservations(t *testing.T) {
 
 	t.Run("FailToReadFromFile", func(t *testing.T) {
 
-		writeToReservationsFile("{}")
+		err := writeToReservationsFile("{}")
+		if err != nil {
+			t.Error("Expected no error writing to file. Got", err)
+		}
 
 		// Delete file
-		err := os.Remove(reservations_file)
+		err = os.Remove(reservations_file)
 		if err != nil {
 			panic(err)
 		}
@@ -90,9 +95,12 @@ func TestNewReservations(t *testing.T) {
 
 	t.Run("FailToParseJsonData", func(t *testing.T) {
 
-		writeToReservationsFile("something that's not json")
+		err := writeToReservationsFile("something that's not json")
+		if err != nil {
+			t.Error("Expected no error writing to file. Got", err)
+		}
 
-		_, err := NewReservations()
+		_, err = NewReservations()
 
 		actual := err.Error()
 		expected := "invalid character 's' looking for beginning of value"
@@ -117,8 +125,7 @@ func TestWriteToFile(t *testing.T) {
 	defer os.Setenv("RESOURCES", old_env)
 	os.Setenv("RESOURCES", "production, staging")
 
-	reservations_file = filepath.Join(
-		reservations_dir, "reservations-test.json")
+	reservations_file = reservations_file + ".test"
 
 	dateFormat := "2006-01-02T15:04:05.000000000-07:00"
 	timestamp := "2017-08-11T17:48:37.556835687-04:00"
@@ -198,8 +205,7 @@ func TestFindByResource(t *testing.T) {
 	defer os.Setenv("RESOURCES", old_env)
 	os.Setenv("RESOURCES", "production, staging")
 
-	reservations_file = filepath.Join(
-		reservations_dir, "reservations-test.json")
+	reservations_file = reservations_file + ".test"
 
 	r1 := Reservation{User: "abc", EndAt: time.Now().AddDate(0, 0, 1)}
 	r2 := Reservation{User: "def", EndAt: time.Now().AddDate(0, 0, 1)}
@@ -230,8 +236,7 @@ func TestUpsert(t *testing.T) {
 	defer os.Setenv("RESOURCES", old_env)
 	os.Setenv("RESOURCES", "production, staging")
 
-	reservations_file = filepath.Join(
-		reservations_dir, "reservations-test.json")
+	reservations_file = reservations_file + ".test"
 
 	t.Run("Success", func(t *testing.T) {
 
@@ -293,8 +298,7 @@ func TestDelete(t *testing.T) {
 	defer os.Setenv("RESOURCES", old_env)
 	os.Setenv("RESOURCES", "production, staging")
 
-	reservations_file = filepath.Join(
-		reservations_dir, "reservations-test.json")
+	reservations_file = reservations_file + ".test"
 
 	t.Run("Success", func(t *testing.T) {
 
@@ -382,7 +386,7 @@ func writeToReservationsFile(body string) error {
 		err = os.MkdirAll(reservations_dir, 0775)
 
 		if err != nil {
-			log.Debug("Error creating directory %v", reservations_dir)
+			log.Debugf("Error creating directory %v", reservations_dir)
 			return err
 		}
 	}

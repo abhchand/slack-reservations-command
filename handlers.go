@@ -199,6 +199,7 @@ _Psst...I understand "minutes" and "hours" - abbreviated, singular, or plural_
 `
 
 	return SlackResponse{Text: help_text}, true
+
 }
 
 /*
@@ -524,7 +525,7 @@ func ensureReservationsFileExists() error {
 		err = os.MkdirAll(reservations_dir, 0775)
 
 		if err != nil {
-			log.Debug("Error creating directory %v", reservations_dir)
+			log.Debugf("Error creating directory %v", reservations_dir)
 			return err
 		}
 	}
