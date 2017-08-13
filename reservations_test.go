@@ -20,7 +20,7 @@ func TestNewReservations(t *testing.T) {
 
     old_env := os.Getenv("RESOURCES")
     defer os.Setenv("RESOURCES", old_env)
-    os.Setenv("RESOURCES", "development, staging")
+    os.Setenv("RESOURCES", "production, staging")
 
     reservations_file = filepath.Join(
         reservations_dir, "reservations-test.json")
@@ -29,7 +29,7 @@ func TestNewReservations(t *testing.T) {
     t.Run("Success", func(t *testing.T) {
 
         expected := Reservations{
-            "development": Reservation{
+            "production": Reservation{
                 User:"foo", EndAt:time.Now().AddDate(0, 0, 1)},
             "staging": Reservation{
                 User:"foo", EndAt:time.Now().AddDate(0, 0, 2)},
@@ -111,7 +111,7 @@ func TestWriteToFile(t *testing.T) {
 
     old_env := os.Getenv("RESOURCES")
     defer os.Setenv("RESOURCES", old_env)
-    os.Setenv("RESOURCES", "development, staging")
+    os.Setenv("RESOURCES", "production, staging")
 
     reservations_file = filepath.Join(
         reservations_dir, "reservations-test.json")
@@ -165,7 +165,7 @@ func TestWriteToFile(t *testing.T) {
         // }
 
         // reservations := Reservations{
-        //     "development": Reservation{User:"foo", EndAt:time.Now()},
+        //     "production": Reservation{User:"foo", EndAt:time.Now()},
         // }
         // err = reservations.WriteToFile()
 
@@ -188,17 +188,17 @@ func TestFindByResource(t *testing.T) {
 
     old_env := os.Getenv("RESOURCES")
     defer os.Setenv("RESOURCES", old_env)
-    os.Setenv("RESOURCES", "development, staging")
+    os.Setenv("RESOURCES", "production, staging")
 
     reservations_file = filepath.Join(
         reservations_dir, "reservations-test.json")
 
     r1 := Reservation{User:"abc", EndAt:time.Now().AddDate(0, 0, 1)}
     r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
-    reservations := Reservations{"development": r1, "staging": r2}
+    reservations := Reservations{"production": r1, "staging": r2}
 
     test_cases := map[string]Reservation{
-        "development": r1,
+        "production": r1,
         "foo": Reservation{},
     }
 
@@ -220,7 +220,7 @@ func TestUpsert(t *testing.T) {
 
     old_env := os.Getenv("RESOURCES")
     defer os.Setenv("RESOURCES", old_env)
-    os.Setenv("RESOURCES", "development, staging")
+    os.Setenv("RESOURCES", "production, staging")
 
     reservations_file = filepath.Join(
         reservations_dir, "reservations-test.json")
@@ -231,7 +231,7 @@ func TestUpsert(t *testing.T) {
         r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
         r3 := Reservation{User:"ghi", EndAt:time.Now().AddDate(0, 0, 1)}
 
-        reservations := Reservations{"development": r1, "staging": r2}
+        reservations := Reservations{"production": r1, "staging": r2}
 
         err := reservations.Upsert("staging", r3)
 
@@ -239,7 +239,7 @@ func TestUpsert(t *testing.T) {
             t.Error("Expected no error, got", err)
         }
 
-        if actual := reservations.FindByResource("development"); actual != r1 {
+        if actual := reservations.FindByResource("production"); actual != r1 {
             t.Error("expected", r1, "got", actual)
         }
 
@@ -255,7 +255,7 @@ func TestUpsert(t *testing.T) {
         r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
         r3 := Reservation{User:"ghi", EndAt:time.Now().AddDate(0, 0, 1)}
 
-        reservations := Reservations{"development": r1, "staging": r2}
+        reservations := Reservations{"production": r1, "staging": r2}
 
         err := reservations.Upsert("foo", r3)
 
@@ -266,7 +266,7 @@ func TestUpsert(t *testing.T) {
 
         // Check that existing values remain unchanged
 
-        if actual := reservations.FindByResource("development"); actual != r1 {
+        if actual := reservations.FindByResource("production"); actual != r1 {
             t.Error("expected", r1, "got", actual)
         }
 
@@ -283,7 +283,7 @@ func TestDelete(t *testing.T) {
 
     old_env := os.Getenv("RESOURCES")
     defer os.Setenv("RESOURCES", old_env)
-    os.Setenv("RESOURCES", "development, staging")
+    os.Setenv("RESOURCES", "production, staging")
 
     reservations_file = filepath.Join(
         reservations_dir, "reservations-test.json")
@@ -294,7 +294,7 @@ func TestDelete(t *testing.T) {
         r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
         zero_value := Reservation{}
 
-        reservations := Reservations{"development": r1, "staging": r2}
+        reservations := Reservations{"production": r1, "staging": r2}
 
         err := reservations.Delete("staging")
 
@@ -302,7 +302,7 @@ func TestDelete(t *testing.T) {
             t.Error("Expected no error, got", err)
         }
 
-        if actual := reservations.FindByResource("development"); actual != r1 {
+        if actual := reservations.FindByResource("production"); actual != r1 {
             t.Error("expected", r1, "got", actual)
         }
 
@@ -317,7 +317,7 @@ func TestDelete(t *testing.T) {
         r1 := Reservation{User:"abc", EndAt:time.Now().AddDate(0, 0, 1)}
         r2 := Reservation{User:"def", EndAt:time.Now().AddDate(0, 0, 1)}
 
-        reservations := Reservations{"development": r1, "staging": r2}
+        reservations := Reservations{"production": r1, "staging": r2}
 
         err := reservations.Delete("foo")
 
@@ -328,7 +328,7 @@ func TestDelete(t *testing.T) {
 
         // Check that existing values remain unchanged
 
-        if actual := reservations.FindByResource("development"); actual != r1 {
+        if actual := reservations.FindByResource("production"); actual != r1 {
             t.Error("expected", r1, "got", actual)
         }
 
@@ -343,7 +343,7 @@ func TestDelete(t *testing.T) {
         r1 := Reservation{User:"abc", EndAt:time.Now().AddDate(0, 0, 1)}
         zero_value := Reservation{}
 
-        reservations := Reservations{"development": r1}
+        reservations := Reservations{"production": r1}
 
         err := reservations.Delete("staging")
 
@@ -353,7 +353,7 @@ func TestDelete(t *testing.T) {
 
         // Check that existing values remain unchanged
 
-        if actual := reservations.FindByResource("development"); actual != r1 {
+        if actual := reservations.FindByResource("production"); actual != r1 {
             t.Error("expected", r1, "got", actual)
         }
 

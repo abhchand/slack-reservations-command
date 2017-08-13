@@ -11,9 +11,9 @@ func TestListOfResources(t *testing.T) {
     // Setup
     old_env := os.Getenv("RESOURCES")
     defer os.Setenv("RESOURCES", old_env)
-    os.Setenv("RESOURCES", "DEVELOPMENT,  sTaging")
+    os.Setenv("RESOURCES", "PRODUCTION,  sTaging")
 
-    expected := []string{"development", "staging"}
+    expected := []string{"production", "staging"}
     actual := ListOfResources()
 
     for i, e := range expected {
@@ -34,10 +34,10 @@ func TestIsValidResource(t *testing.T) {
     // Setup
     old_env := os.Getenv("RESOURCES")
     defer os.Setenv("RESOURCES", old_env)
-    os.Setenv("RESOURCES", "development, staging")
+    os.Setenv("RESOURCES", "production, staging")
 
     test_cases := map[string]bool{
-        "development": true,
+        "production": true,
         "foo": false,
     }
 
