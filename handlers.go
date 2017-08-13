@@ -299,7 +299,7 @@ func handleCommandReserve(slack_request SlackRequest) (SlackResponse, bool) {
     // Update
     err = reservations.Upsert(resource, reservation)
     if err != nil {
-        if regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
+        if isInvalidResourceError(err) {
             response.Text = unknownResourceText(resource)
             return response, true
         } else {
@@ -383,7 +383,7 @@ func handleCommandExtend(slack_request SlackRequest) (SlackResponse, bool) {
     // Update
     err = reservations.Upsert(resource, reservation)
     if err != nil {
-        if regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
+        if isInvalidResourceError(err) {
             response.Text = unknownResourceText(resource)
             return response, true
         } else {
@@ -446,7 +446,7 @@ func handleCommandCancel(slack_request SlackRequest) (SlackResponse, bool) {
     // Delete
     err = reservations.Delete(resource)
     if err != nil {
-        if regexp.MustCompile("Invalid Resource").MatchString(err.Error()) {
+        if isInvalidResourceError(err) {
             response.Text = unknownResourceText(resource)
             return response, true
         } else {
@@ -501,6 +501,12 @@ func unknownResourceText(resource string) string {
         resource,
         ListOfResources(),
     )
+
+}
+
+func isInvalidResourceError(err error) bool {
+
+    return regexp.MustCompile("Invalid Resource").MatchString(err.Error())
 
 }
 
