@@ -1,22 +1,21 @@
 package main
 
-import(
-    "testing"
+import (
+	"testing"
 )
 
 func TestMaskToken(t *testing.T) {
 
-    token := "gIkuvaNzQIHg97ATvDxqgjtO"
+	token := "gIkuvaNzQIHg97ATvDxqgjtO"
 
-    expected := "********************gjtO"
-    actual := maskToken(token)
+	expected := "********************gjtO"
+	actual := maskToken(token)
 
-    if actual != expected {
-        t.Error(
-            "expected", expected,
-            "got", actual,
-        )
-    }
+	if actual != expected {
+		t.Error(
+			"expected", expected,
+			"got", actual,
+		)
+	}
 
 }
-

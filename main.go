@@ -1,19 +1,19 @@
 package main
 
 import (
-    "net/http"
+	"net/http"
 )
 
 var log = initializeLogger()
 
 func main() {
 
-    validateOptions()
-    logOptions()
+	validateOptions()
+	logOptions()
 
-    router := NewRouter()
+	router := NewRouter()
 
-    log.Info("I'm listening...")
-    log.Fatal(http.ListenAndServe(":8080", router))
+	log.Info("I'm listening...")
+	log.Fatal(http.ListenAndServe(":8080", router))
 
 }
