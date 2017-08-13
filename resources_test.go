@@ -29,6 +29,25 @@ func TestListOfResources(t *testing.T) {
 
 }
 
+func TestListOfResourcesToString(t *testing.T) {
+
+    // Setup
+    old_env := os.Getenv("RESOURCES")
+    defer os.Setenv("RESOURCES", old_env)
+    os.Setenv("RESOURCES", "production,  staging")
+
+    expected := "[production, staging]"
+    actual := ListOfResourcesToString()
+
+    if actual != expected {
+        t.Error(
+            "expected", expected,
+            "got", actual,
+        )
+    }
+
+}
+
 func TestIsValidResource(t *testing.T) {
 
     // Setup

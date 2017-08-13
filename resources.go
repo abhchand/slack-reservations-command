@@ -16,6 +16,11 @@ func ListOfResources() []string {
 
 }
 
+func ListOfResourcesToString() string {
+
+    return "[" + strings.Join(ListOfResources(), ", ") + "]"
+}
+
 func IsValidResource(resource string) bool {
 
     resources := ListOfResources()
