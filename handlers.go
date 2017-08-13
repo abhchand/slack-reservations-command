@@ -517,7 +517,7 @@ func unknownResourceText(resource string) string {
         "I don't know what \"*%v*\" is. Did you misspell it?\n" +
             "Valid resources: %v",
         resource,
-        ListOfResources(),
+        ListOfResourcesToString(),
     )
 
 }

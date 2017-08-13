@@ -31,7 +31,7 @@ func logOptions() {
     for i := 0; i < len(token)-4; i++ { token_bytes[i] = '*' }
     token = string(token_bytes)
 
-    log.Infof("Available resources: %v", ListOfResources())
+    log.Infof("Available resources: %v", ListOfResourcesToString())
     log.Infof("Slack API Token: %v", string(token_bytes))
 
 }
