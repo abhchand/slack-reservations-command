@@ -165,6 +165,8 @@ func handleCommandHelp(slack_request SlackRequest) (SlackResponse, bool) {
     _*Reservations Bot*_
     I'm a basic reservations system for shared resources
 
+    You can use me to reserve any of the following: ` + ListOfResourcesToString() + `
+
 *list* (or *ls*) - List reservations
 ` + "`/reservations list`" + `
 
