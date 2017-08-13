@@ -25,13 +25,10 @@ func validateOptions() {
 
 func logOptions() {
 
-    // Mask all but last 4 digits of token
-    token := os.Getenv("SLACK_VERIFICATION_TOKEN")
-    token_bytes := []byte(token)
-    for i := 0; i < len(token)-4; i++ { token_bytes[i] = '*' }
-    token = string(token_bytes)
-
     log.Infof("Available resources: %v", ListOfResourcesToString())
-    log.Infof("Slack API Token: %v", string(token_bytes))
+    log.Infof(
+        "Slack API Token: %v",
+        maskToken(os.Getenv("SLACK_VERIFICATION_TOKEN")),
+    )
 
 }
