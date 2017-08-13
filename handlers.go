@@ -425,13 +425,22 @@ func handleCommandCancel(slack_request SlackRequest) (SlackResponse, bool) {
     matches     := subcmd_cancel_regex.FindStringSubmatch(command)
     resource    := matches[1]
 
-    // Ensure an active reservation exists for this reousrce and user.
+    // Check that resource is valid
+    // Delete() below checks for this, but we want to do it sooner so we
+    // can return the appropriate message to the user
+    if !IsValidResource(resource) {
+        response.Text = unknownResourceText(resource)
+        return response, true
+    }
+
+    // Find all reservations
     reservations, err := NewReservations()
     if err != nil {
         log.Error(err)
         return response, false
     }
 
+    // Ensure an active reservation exists for this reousrce and user.
     reservation := reservations.FindByResource(resource)
     if !reservation.IsPresent() ||
             !reservation.IsActive() ||
@@ -444,15 +453,12 @@ func handleCommandCancel(slack_request SlackRequest) (SlackResponse, bool) {
     }
 
     // Delete
+    // Unlike create and extend actions, no need to check explicitly for
+    // `isInvalidResourceError()` since that's already done manually above
     err = reservations.Delete(resource)
     if err != nil {
-        if isInvalidResourceError(err) {
-            response.Text = unknownResourceText(resource)
-            return response, true
-        } else {
-            log.Error(err)
-            return response, false
-        }
+        log.Error(err)
+        return response, false
     }
 
     // Save to file
