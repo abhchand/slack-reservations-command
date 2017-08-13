@@ -42,6 +42,7 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 
     // Check validity of slack verification token
     if !isValidSlackVerificationToken(slack_request) {
+        log.Errorf("Invalid Slack token %v", maskToken(slack_request.Token))
         buildInvalidResponse(w); return
     }
 
@@ -89,11 +90,6 @@ func MainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func isValidSlackVerificationToken(s SlackRequest) bool {
-
-    token := os.Getenv("SLACK_VERIFICATION_TOKEN")
-    valid := (token == s.Token)
-
-    if !valid { log.Errorf("Invalid Slack token %v", s.Token) }
 
     return os.Getenv("SLACK_VERIFICATION_TOKEN") == s.Token
 
