@@ -172,10 +172,10 @@ func handleCommandHelp(slack_request SlackRequest) (SlackResponse, bool) {
 	example_resource := resources[0]
 
 	help_text := `
-    _*Reservations Bot*_
-    I'm a basic reservations system for shared resources
 
-    You can use me to reserve any of the following: ` + ListOfResourcesToString() + `
+I'm a basic reservations system for shared resources
+
+You can use me to reserve any of the following: ` + ListOfResourcesToString() + `
 
 *list* (or *ls*) - List reservations
 ` + "`/reservations list`" + `
